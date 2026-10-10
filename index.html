@@ -230,6 +230,12 @@ footer ul { margin: 0; padding-left: 18px; }
   .count b { font-size: 26px; }
   .pts { grid-template-columns: repeat(5, 1fr); }
 }
+
+/* live-data states */
+.empty { padding: 18px 20px; color: var(--muted); font-size: 14px; }
+.notice { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 12px 16px; border-radius: 10px; background: var(--chip); font-size: 14px; }
+.notice.err { color: var(--red); }
+.prov { font: 600 10px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--yellow); }
 </style>
 
 <header class="bar">
@@ -247,62 +253,58 @@ footer ul { margin: 0; padding-left: 18px; }
 </header>
 
 <main class="wrap">
+  <div class="notice" id="notice" hidden></div>
 
   <!-- LIVE -->
   <section class="view" id="v-live">
     <div class="panel hero">
       <div class="main">
-        <span class="state" id="raceState"><span class="dot"></span><span id="raceStateTxt">Race weekend</span></span>
-        <div class="label">Round 17 of 23 · Marina Bay Street Circuit · Night race</div>
-        <h1>Singapore Grand Prix</h1>
+        <span class="state" id="raceState"><span class="dot"></span><span id="raceStateTxt">Loading live data…</span></span>
+        <div class="label" id="heroLabel">&nbsp;</div>
+        <h1 id="heroName">Pit Wall</h1>
         <div class="count" id="count" aria-live="polite">
           <div><b id="cd-d">0</b><span>Days</span></div>
           <div><b id="cd-h">00</b><span>Hrs</span></div>
           <div><b id="cd-m">00</b><span>Min</span></div>
           <div><b id="cd-s">00</b><span>Sec</span></div>
         </div>
-        <div class="facts">
-          <div><span class="label">Laps</span><b>62</b></div>
-          <div><span class="label">Lap length</span><b>4.940 km</b></div>
-          <div><span class="label">Corners</span><b>19</b></div>
-          <div><span class="label">Pole</span><b>1:31.373</b></div>
-        </div>
+        <div class="facts" id="facts"></div>
       </div>
       <div class="sessions" id="sessions"></div>
     </div>
 
     <div class="two">
       <div>
-        <div class="sec-head"><h2>Qualifying</h2><span class="label">Sat 10 Oct · penalties shift the grid</span></div>
-        <div class="panel tbl-wrap"><table id="qualiTbl"></table></div>
+        <div class="sec-head"><h2>Qualifying</h2><span class="label" id="qualiLabel"></span></div>
+        <div class="panel tbl-wrap" id="qualiBox"></div>
       </div>
       <div style="display:grid;gap:28px;align-content:start">
-        <div>
-          <div class="sec-head"><h2>Sprint result</h2><span class="label">Wet · Sat 10 Oct</span></div>
-          <div class="panel tbl-wrap"><table id="sprintTbl"></table></div>
+        <div id="sprintWrap">
+          <div class="sec-head"><h2 id="sideTitle">Sprint result</h2><span class="label" id="sprintLabel"></span></div>
+          <div class="panel tbl-wrap" id="sprintBox"></div>
         </div>
         <div>
-          <div class="sec-head"><h2>Title fight</h2><span class="label">After Singapore Sprint</span></div>
+          <div class="sec-head"><h2>Title fight</h2><span class="label" id="fightLabel"></span></div>
           <div class="panel fight" id="fight"></div>
         </div>
       </div>
     </div>
     <div class="tools">
-      <div>
-        <div class="sec-head"><h2>Title calculator</h2><span class="label">Play out tonight</span></div>
+      <div id="calcWrap">
+        <div class="sec-head"><h2>Title calculator</h2><span class="label">Play out the next race</span></div>
         <div class="panel tool">
-          <p>Pick where the two Mercedes drivers finish tonight and see how the championship looks heading to Austin.</p>
+          <p id="calcIntro"></p>
           <div class="pickrow">
-            <label for="calcAnt"><span class="label">Antonelli finishes</span><select id="calcAnt"></select></label>
-            <label for="calcRus"><span class="label">Russell finishes</span><select id="calcRus"></select></label>
+            <label for="calcA"><span class="label" id="calcALbl">Leader finishes</span><select id="calcA"></select></label>
+            <label for="calcB"><span class="label" id="calcBLbl">Second finishes</span><select id="calcB"></select></label>
           </div>
           <div class="verdict" id="calcOut"></div>
         </div>
       </div>
-      <div>
+      <div id="pickWrap">
         <div class="sec-head"><h2>Pick your podium</h2><span class="label">Saved on this device</span></div>
-        <div class="panel tool" id="pickTool">
-          <p>Call tonight's top three before lights out. Your pick stays on this device so you can check it after the race.</p>
+        <div class="panel tool">
+          <p>Call the top three before lights out. Your pick stays on this device and gets scored once the result is in.</p>
           <div class="pickrow">
             <label for="pick1"><span class="label">P1</span><select id="pick1"></select></label>
             <label for="pick2"><span class="label">P2</span><select id="pick2"></select></label>
@@ -313,6 +315,7 @@ footer ul { margin: 0; padding-left: 18px; }
             <span class="label" id="pickMsg" aria-live="polite"></span>
           </div>
           <div class="mypick" id="pickShow"></div>
+          <div class="label" id="pickPrev"></div>
         </div>
       </div>
     </div>
@@ -325,19 +328,19 @@ footer ul { margin: 0; padding-left: 18px; }
       <div class="panel chart"><div class="legend" id="legend"></div><div id="progChart"></div></div>
     </div>
     <div>
-      <div class="sec-head"><h2>Drivers' Championship</h2><span class="label">After Rd 17 Sprint · 16 GPs run</span></div>
-      <div class="panel tbl-wrap"><table id="drvTbl"></table></div>
+      <div class="sec-head"><h2>Drivers' Championship</h2><span class="label" id="drvLabel"></span></div>
+      <div class="panel tbl-wrap" id="drvBox"></div>
     </div>
     <div>
-      <div class="sec-head"><h2>Constructors' Championship</h2><span class="label">After Rd 17 Sprint</span></div>
-      <div class="panel tbl-wrap"><table id="conTbl"></table></div>
+      <div class="sec-head"><h2>Constructors' Championship</h2><span class="label" id="conLabel"></span></div>
+      <div class="panel tbl-wrap" id="conBox"></div>
     </div>
   </section>
 
   <!-- CALENDAR -->
   <section class="view" id="v-calendar" hidden>
     <div>
-      <div class="sec-head"><h2>2026 Calendar</h2><span class="label" id="tzLabel">Times in your local zone</span></div>
+      <div class="sec-head"><h2 id="calTitle">Calendar</h2><span class="label" id="tzLabel"></span></div>
       <div class="cal" id="cal"></div>
     </div>
   </section>
@@ -345,19 +348,19 @@ footer ul { margin: 0; padding-left: 18px; }
   <!-- RESULTS -->
   <section class="view" id="v-results" hidden>
     <div>
-      <div class="sec-head"><h2>Race results</h2><span class="label">Podium and pole, every round</span></div>
+      <div class="sec-head"><h2>Race results</h2><span class="label">Podium and front of the grid, every round</span></div>
       <div class="res-list" id="resList"></div>
     </div>
     <div>
-      <div class="sec-head"><h2>Last race · full classification</h2><span class="label">Rd 16 · Bahrain GP at Sepang · 4 Oct</span></div>
-      <div class="panel tbl-wrap"><table id="lastTbl"></table></div>
+      <div class="sec-head"><h2>Last race · full classification</h2><span class="label" id="lastLabel"></span></div>
+      <div class="panel tbl-wrap" id="lastBox"></div>
     </div>
   </section>
 
   <!-- TEAMS -->
   <section class="view" id="v-grid" hidden>
     <div>
-      <div class="sec-head"><h2>The 2026 grid</h2><span class="label">11 teams · 22 cars</span></div>
+      <div class="sec-head"><h2 id="gridTitle">The grid</h2><span class="label" id="gridLabel"></span></div>
       <div class="teams" id="teams"></div>
     </div>
   </section>
@@ -404,8 +407,8 @@ footer ul { margin: 0; padding-left: 18px; }
         <p>Qualifying has three knockouts. Q1 drops the slowest six, Q2 the next six, and the last ten fight for pole in Q3.</p>
       </div>
       <div class="panel">
-        <h3>About Marina Bay</h3>
-        <p>F1's original night race, first run in 2008. Street walls, heat around 30°C and humidity make it one of the most draining races of the year, and Safety Car periods are common.</p>
+        <h3>How this site updates</h3>
+        <p>Every visit pulls the latest calendar, results and standings from the free Jolpica F1 data feed, and an open page checks again every ten minutes. Official results usually appear a few hours after a session ends.</p>
       </div>
     </div>
   </section>
@@ -415,357 +418,435 @@ footer ul { margin: 0; padding-left: 18px; }
 
 <footer>
   <div class="wrap">
-    <div><strong>Data as of 11 Oct 2026, 00:15 SGT</strong>, after Singapore qualifying. Times shown in your local zone. Countdown is live; results update when the page is republished.</div>
+    <div id="dataStamp"><strong>Loading live data…</strong></div>
     <ul>
-      <li>Standings, results, calendar: <a href="https://api.jolpi.ca/ergast/f1/2026/" target="_blank" rel="noopener">Jolpica F1 API</a></li>
-      <li>Singapore Sprint: <a href="https://www.formula1.com/en/latest/article/verstappen-wins-dramatic-rain-hit-singapore-sprint-as-russell-crashes-and-mclarens-collide.4r90mH2skljBa5sinFAsyp" target="_blank" rel="noopener">Formula1.com sprint report</a></li>
-      <li>Singapore qualifying: <a href="https://www.formula1.com/en/latest/article/verstappen-beats-leclerc-to-pole-position-for-the-singapore-gp.7yum1V3S9aSTyj3Zzzs0Y9" target="_blank" rel="noopener">Formula1.com qualifying report</a>, <a href="https://www.motorsportweek.com/2026/10/10/f1-2026-singapore-gp-qualifying-results/" target="_blank" rel="noopener">Motorsport Week</a></li>
+      <li>Calendar, results and standings: <a href="https://api.jolpi.ca/ergast/f1/current/" target="_blank" rel="noopener">Jolpica F1 API</a>, loaded live in your browser.</li>
+      <li>Times are shown in your local zone. Unofficial fan site, not affiliated with Formula 1 or the FIA.</li>
     </ul>
   </div>
 </footer>
 
 <script>
-const TEAMS = {
-  MER: { name: "Mercedes", c: "#00b8a0" },
-  FER: { name: "Ferrari", c: "#e8002d" },
-  MCL: { name: "McLaren", c: "#ff8000" },
-  RBR: { name: "Red Bull", c: "#3671c6" },
-  RB:  { name: "Racing Bulls", c: "#6692ff" },
-  ALP: { name: "Alpine", c: "#ff5fa8" },
-  HAA: { name: "Haas", c: "#9a9ea3" },
-  AUD: { name: "Audi", c: "#c1272d" },
-  WIL: { name: "Williams", c: "#3fb5ff" },
-  AMR: { name: "Aston Martin", c: "#229971" },
-  CAD: { name: "Cadillac", c: "#b9975b" }
+const API = "https://api.jolpi.ca/ergast/f1/current";
+const TEAM = {
+  mercedes: ["Mercedes", "#00b8a0"], ferrari: ["Ferrari", "#e8002d"], mclaren: ["McLaren", "#ff8000"],
+  red_bull: ["Red Bull", "#3671c6"], rb: ["Racing Bulls", "#6692ff"], alpine: ["Alpine", "#ff5fa8"],
+  haas: ["Haas", "#9a9ea3"], audi: ["Audi", "#c1272d"], sauber: ["Sauber", "#52e252"],
+  williams: ["Williams", "#3fb5ff"], aston_martin: ["Aston Martin", "#229971"], cadillac: ["Cadillac", "#b9975b"]
 };
-const D = {
-  ANT: ["Andrea Kimi Antonelli", 12, "MER"], RUS: ["George Russell", 63, "MER"],
-  HAM: ["Lewis Hamilton", 44, "FER"], LEC: ["Charles Leclerc", 16, "FER"],
-  NOR: ["Lando Norris", 1, "MCL"], PIA: ["Oscar Piastri", 81, "MCL"],
-  VER: ["Max Verstappen", 3, "RBR"], HAD: ["Isack Hadjar", 6, "RBR"],
-  LAW: ["Liam Lawson", 30, "RB"], LIN: ["Arvid Lindblad", 41, "RB"], TSU: ["Yuki Tsunoda", 22, "RB"],
-  GAS: ["Pierre Gasly", 10, "ALP"], COL: ["Franco Colapinto", 43, "ALP"],
-  BEA: ["Oliver Bearman", 87, "HAA"], OCO: ["Esteban Ocon", 31, "HAA"],
-  BOR: ["Gabriel Bortoleto", 5, "AUD"], HUL: ["Nico Hülkenberg", 27, "AUD"],
-  SAI: ["Carlos Sainz", 55, "WIL"], ALB: ["Alexander Albon", 23, "WIL"],
-  ALO: ["Fernando Alonso", 14, "AMR"], STR: ["Lance Stroll", 18, "AMR"],
-  BOT: ["Valtteri Bottas", 77, "CAD"], PER: ["Sergio Pérez", 11, "CAD"]
-};
-const RACE_START = Date.parse("2026-10-11T12:00:00Z");
+const GP_PTS = [25,18,15,12,10,8,6,4,2,1];
+const LIVE_WINDOW = 2.25 * 3600e3;
 
-// Standings after Rd 16 plus Singapore Sprint points
-const DRV = [["ANT",325,8],["RUS",236,3],["HAM",221,1],["LEC",197,1],["VER",196,1],["NOR",189,2],["PIA",128,0],["HAD",96,0],["LAW",69,0],["GAS",41,0],["LIN",38,0],["COL",27,0],["BEA",23,0],["BOR",10,0],["HUL",9,0],["OCO",7,0],["ALO",7,0],["SAI",7,0],["ALB",5,0],["TSU",1,0],["STR",0,0],["BOT",0,0],["PER",0,0]];
-const CON = [["MER",561,11],["FER",418,2],["MCL",317,2],["RBR",306,1],["RB",94,0],["ALP",68,0],["HAA",30,0],["AUD",19,0],["WIL",12,0],["AMR",7,0],["CAD",0,0]];
+// Singapore 2026 sessions from FIA/F1 reports, used only until the official feed publishes them.
+const SEED = { season: "2026", round: 17,
+  quali: [["VER","1:31.373"],["LEC","+0.054"],["HAM","+0.123"],["ANT","+0.189"],["NOR","+0.339"],["RUS","Q3","Grid penalty, power unit change"],["PIA","Q3"],["GAS","Q3"],["LAW","Q3"],["LIN","Q3"],
+          ["HUL","Q2"],["BEA","Q2"],["OCO","Q2"],["SAI","Q2"],["BOR","Q2"],["COL","Q2"],["ALO","Q1"],["ALB","Q1"],["STR","Q1"],["PER","Q1"],["BOT","Q1"],["HAD","No time","Reliability problems"]],
+  sprint: [["VER",8],["HAM",7],["LEC",6],["ANT",5],["LAW",4],["BEA",3],["HUL",2],["NOR",1]] };
 
-const QUALI = [
-  ["VER","1:31.373",""],["LEC","+0.054",""],["HAM","+0.123",""],["ANT","+0.189",""],["NOR","+0.339",""],
-  ["RUS","Q3","Grid penalty, power unit change"],["PIA","Q3",""],["GAS","Q3",""],["LAW","Q3",""],["LIN","Q3",""],
-  ["HUL","Q2",""],["BEA","Q2",""],["OCO","Q2",""],["SAI","Q2",""],["BOR","Q2",""],["COL","Q2",""],
-  ["ALO","Q1",""],["ALB","Q1",""],["STR","Q1",""],["PER","Q1",""],["BOT","Q1",""],["HAD","No time","Reliability problems"]
-];
-const SPRINT = [["VER",8],["HAM",7],["LEC",6],["ANT",5],["LAW",4],["BEA",3],["HUL",2],["NOR",1]];
-
-const CAL = [
- [1,"Australian GP","Albert Park","Melbourne, Australia","2026-03-08T04:00:00Z",0],
- [2,"Chinese GP","Shanghai International Circuit","Shanghai, China","2026-03-15T07:00:00Z",1],
- [3,"Japanese GP","Suzuka","Suzuka, Japan","2026-03-29T05:00:00Z",0],
- [4,"Miami GP","Miami International Autodrome","Miami, USA","2026-05-03T20:00:00Z",1],
- [5,"Canadian GP","Circuit Gilles Villeneuve","Montreal, Canada","2026-05-24T20:00:00Z",1],
- [6,"Monaco GP","Circuit de Monaco","Monte Carlo, Monaco","2026-06-07T13:00:00Z",0],
- [7,"Barcelona GP","Circuit de Barcelona-Catalunya","Barcelona, Spain","2026-06-14T13:00:00Z",0],
- [8,"Austrian GP","Red Bull Ring","Spielberg, Austria","2026-06-28T13:00:00Z",0],
- [9,"British GP","Silverstone","Silverstone, UK","2026-07-05T14:00:00Z",1],
- [10,"Belgian GP","Spa-Francorchamps","Spa, Belgium","2026-07-19T13:00:00Z",0],
- [11,"Hungarian GP","Hungaroring","Budapest, Hungary","2026-07-26T13:00:00Z",0],
- [12,"Dutch GP","Zandvoort","Zandvoort, Netherlands","2026-08-23T13:00:00Z",1],
- [13,"Italian GP","Monza","Monza, Italy","2026-09-06T13:00:00Z",0],
- [14,"Spanish GP","Madring","Madrid, Spain","2026-09-13T13:00:00Z",0],
- [15,"Azerbaijan GP","Baku City Circuit","Baku, Azerbaijan","2026-09-26T11:00:00Z",0],
- [16,"Bahrain GP","Sepang (relocated)","Kuala Lumpur, Malaysia","2026-10-04T07:00:00Z",0],
- [17,"Singapore GP","Marina Bay","Singapore","2026-10-11T12:00:00Z",1],
- [18,"United States GP","Circuit of the Americas","Austin, USA","2026-10-25T20:00:00Z",0],
- [19,"Mexico City GP","Hermanos Rodríguez","Mexico City, Mexico","2026-11-01T20:00:00Z",0],
- [20,"São Paulo GP","Interlagos","São Paulo, Brazil","2026-11-08T17:00:00Z",0],
- [21,"Las Vegas GP","Las Vegas Strip","Las Vegas, USA","2026-11-22T04:00:00Z",0],
- [22,"Qatar GP","Lusail","Lusail, Qatar","2026-11-29T16:00:00Z",0],
- [23,"Abu Dhabi GP","Yas Marina","Abu Dhabi, UAE","2026-12-06T13:00:00Z",0]
-];
-// round: [P1, P2, P3, pole, winner time]
-const RES = {
- 1:["RUS","ANT","LEC","RUS","1:23:06.801"], 2:["ANT","RUS","HAM","ANT","1:33:15.607"], 3:["ANT","PIA","LEC","ANT","1:28:03.403"],
- 4:["ANT","NOR","PIA","ANT","1:33:19.273"], 5:["ANT","HAM","VER","RUS","1:28:15.758"], 6:["ANT","HAM","HAD","ANT","2:23:31.243"],
- 7:["HAM","RUS","NOR","RUS","1:32:28.105"], 8:["RUS","VER","ANT","RUS","1:26:37.979"], 9:["LEC","RUS","HAM","ANT","1:27:11.335"],
- 10:["ANT","LEC","VER","ANT","1:24:42.479"], 11:["NOR","VER","ANT","NOR","1:39:56.180"], 12:["NOR","ANT","RUS","NOR","2:04:44.859"],
- 13:["ANT","RUS","VER","GAS","1:51:15.281"], 14:["ANT","VER","NOR","NOR","1:34:23.754"], 15:["RUS","VER","HAD","RUS","1:38:02.143"],
- 16:["VER","ANT","HAM","VER","1:47:14.808"]
-};
-const LAST = [
- ["VER",1,"1:47:14.808",25,"1:38.220"],["ANT",3,"+2.307",18,"1:38.589"],["HAM",2,"+4.919",15,"1:38.610"],["LEC",4,"+7.258",12,"1:39.336"],
- ["HAD",8,"+8.571",10,"1:39.792"],["PIA",6,"+9.454",8,"1:39.485"],["LAW",11,"+12.753",6,"1:40.254"],["ALO",12,"+13.372",4,"1:40.353"],
- ["NOR",5,"+13.993",2,"1:39.970"],["LIN",22,"+15.928",1,"1:40.315"],["HUL",15,"+17.404",0,"1:41.394"],["STR",14,"+18.052",0,"1:41.248"],
- ["COL",21,"+18.997",0,"1:40.988"],["BEA",16,"+22.305",0,"1:40.366"],["OCO",17,"+22.532",0,"1:42.062"],["GAS",9,"+23.315",0,"1:41.514"],
- ["SAI",13,"+25.431",0,"1:41.738"],["BOR",10,"+28.233",0,"1:41.382"],["PER",20,"+29.310",0,"1:42.688"],
- ["RUS",7,"DNF · lap 49",0,"1:40.715"],["ALB",18,"DNF · lap 41",0,"1:42.284"],["BOT",19,"DNF · lap 7",0,"1:59.953"]
-];
-const SESSIONS = [
-  ["Practice 1","", "Russell fastest", null],
-  ["Sprint Qualifying","2026-10-09T12:30:00Z","Pole: Verstappen", null],
-  ["Sprint","2026-10-10T09:00:00Z","Verstappen wins wet, delayed Sprint", null],
-  ["Qualifying","2026-10-10T13:00:00Z","Pole: Verstappen, 1:31.373", null],
-  ["Grand Prix","2026-10-11T12:00:00Z","62 laps", "race"]
-];
-
+// S holds the normalised season: races, results/sprints by round, standings, drivers.
+let S = null;
 const $ = id => document.getElementById(id);
-const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-const fmtDT = iso => new Date(iso).toLocaleString(undefined, { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
-const fmtD = iso => new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short" });
+const fmtDT = t => new Date(t).toLocaleString(undefined, { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+const fmtD = t => new Date(t).toLocaleDateString(undefined, { day: "numeric", month: "short" });
+const fmtT = t => new Date(t).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+const at = (d, t) => Date.parse(d + "T" + (t || "12:00:00Z"));
+const team = cid => TEAM[cid] ? { name: TEAM[cid][0], c: TEAM[cid][1] } : { name: (S && S.teamNames[cid]) || cid || "–", c: "#888" };
+const drv = id => (S && S.drivers[id]) || { code: "?", name: id, last: id, num: "", cid: "" };
 
-function drvCell(code, showTeam = true) {
-  const [name, , t] = D[code]; const team = TEAMS[t];
-  return `<div class="drv"><span class="tc" style="background:${team.c}"></span><div><button type="button" class="dlink" data-d="${code}">${esc(name)}</button>${showTeam ? `<div class="team">${esc(team.name)}</div>` : ""}</div></div>`;
+/* ---------- data ---------- */
+async function get(path) {
+  const ctl = new AbortController(); const timer = setTimeout(() => ctl.abort(), 15000);
+  try {
+    const r = await fetch(API + path, { signal: ctl.signal });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    return (await r.json()).MRData;
+  } finally { clearTimeout(timer); }
 }
-function shortName(code) { const n = D[code][0].split(" "); return n[n.length - 1]; }
+// The feed caps pages at 100 rows and can split one race across pages.
+async function getAll(path, key) {
+  const pages = [await get(`${path}?limit=100&offset=0`)];
+  for (let o = 100; o < +pages[0].total; o += 100) pages.push(await get(`${path}?limit=100&offset=${o}`));
+  const byRound = {};
+  pages.forEach(p => p.RaceTable.Races.forEach(r => {
+    (byRound[r.round] ||= { raceName: r.raceName, rows: [] }).rows.push(...r[key]);
+  }));
+  return byRound;
+}
+function addDriver(N, d, c) {
+  N.drivers[d.driverId] = { code: d.code || d.familyName.slice(0, 3).toUpperCase(), name: d.givenName + " " + d.familyName, last: d.familyName, num: d.permanentNumber || "", cid: c.constructorId };
+  N.teamNames[c.constructorId] = c.name;
+}
+async function load() {
+  const [cal, ds, cs] = await Promise.all([get(".json?limit=100"), get("/driverStandings.json"), get("/constructorStandings.json")]);
+  const res = await getAll("/results.json", "Results");
+  const spr = await getAll("/sprint.json", "SprintResults");
+  const N = { season: cal.RaceTable.season, drivers: {}, teamNames: {}, results: {}, sprints: {}, quali: {}, fetched: Date.now() };
+  N.races = cal.RaceTable.Races.map(r => {
+    const ses = [];
+    [["FirstPractice","Practice 1"],["SecondPractice","Practice 2"],["ThirdPractice","Practice 3"],["SprintQualifying","Sprint Qualifying"],["Sprint","Sprint"],["Qualifying","Qualifying"]]
+      .forEach(([k, n]) => r[k] && ses.push([n, at(r[k].date, r[k].time)]));
+    ses.push(["Grand Prix", at(r.date, r.time)]); ses.sort((a, b) => a[1] - b[1]);
+    return { round: +r.round, name: r.raceName, circuit: r.Circuit.circuitName, loc: r.Circuit.Location.locality + ", " + r.Circuit.Location.country, start: at(r.date, r.time), sprint: !!r.Sprint, ses };
+  });
+  Object.keys(res).map(Number).sort((a, b) => a - b).forEach(rd => {
+    N.results[rd] = res[rd].rows.sort((a, b) => a.position - b.position).map(x => {
+      addDriver(N, x.Driver, x.Constructor);
+      const fin = /^\d+$/.test(x.positionText);
+      return { id: x.Driver.driverId, pos: fin ? +x.positionText : null, grid: +x.grid, pts: +x.points,
+        time: x.Time ? x.Time.time : (fin ? x.status : (x.status === "Retired" ? "DNF" : x.status)), fl: x.FastestLap && x.FastestLap.Time ? x.FastestLap.Time.time : "" };
+    });
+  });
+  Object.keys(spr).forEach(rd => {
+    N.sprints[rd] = spr[rd].rows.sort((a, b) => a.position - b.position).map(x => { if (!N.drivers[x.Driver.driverId]) addDriver(N, x.Driver, x.Constructor); return { id: x.Driver.driverId, pos: +x.position, pts: +x.points }; });
+  });
+  const dl = ds.StandingsTable.StandingsLists[0], cl = cs.StandingsTable.StandingsLists[0];
+  N.standRound = dl ? +dl.round : 0;
+  N.dStand = dl ? dl.DriverStandings.map(x => { if (!N.drivers[x.Driver.driverId]) addDriver(N, x.Driver, x.Constructors[x.Constructors.length - 1]); return { id: x.Driver.driverId, pts: +x.points, wins: +x.wins }; }) : [];
+  N.cStand = cl ? cl.ConstructorStandings.map(x => { N.teamNames[x.Constructor.constructorId] = x.Constructor.name; return { cid: x.Constructor.constructorId, pts: +x.points, wins: +x.wins }; }) : [];
+  // qualifying for the weekend in focus
+  const h = heroRace(N);
+  if (h) {
+    const q = await get(`/${h.round}/qualifying.json`);
+    const qr = q.RaceTable.Races[0];
+    if (qr) {
+      const toS = t => { const [m, s] = t.split(":"); return s === undefined ? +m : +m * 60 + +s; };
+      const rows = qr.QualifyingResults; const pole = rows[0] && (rows[0].Q3 || rows[0].Q2 || rows[0].Q1);
+      N.quali[h.round] = rows.map((x, i) => {
+        if (!N.drivers[x.Driver.driverId]) addDriver(N, x.Driver, x.Constructor);
+        let t = x.Q3 || x.Q2 || x.Q1 || "No time";
+        if (i > 0 && x.Q3 && rows[0].Q3) t = "+" + (toS(x.Q3) - toS(pole)).toFixed(3);
+        else if (i > 0 && !x.Q3 && (x.Q2 || x.Q1)) t = (x.Q2 ? "Q2 · " : "Q1 · ") + t;
+        return { id: x.Driver.driverId, t, note: "" };
+      });
+    }
+  }
+  return N;
+}
+function heroRace(N = S) {
+  if (!N || !N.races.length) return null;
+  const now = Date.now();
+  return N.races.find(r => !N.results[r.round] && r.start > now - 2 * 86400e3) || N.races.find(r => !N.results[r.round]) || N.races[N.races.length - 1];
+}
+const byCode = code => Object.keys(S.drivers).find(k => S.drivers[k].code === code);
+function seeded(kind, rd) {
+  if (!(S.season === SEED.season && rd === SEED.round)) return null;
+  if (kind === "quali") return SEED.quali.map(([c, t, note]) => ({ id: byCode(c), t, note: note || "" })).filter(x => x.id);
+  return SEED.sprint.map(([c, pts], i) => ({ id: byCode(c), pos: i + 1, pts })).filter(x => x.id);
+}
 
-// Live
+/* ---------- shared bits ---------- */
+function drvCell(id, showTeam = true) {
+  const d = drv(id), t = team(d.cid);
+  return `<div class="drv"><span class="tc" style="background:${t.c}"></span><div><button type="button" class="dlink" data-d="${esc(id)}">${esc(d.name)}</button>${showTeam ? `<div class="team">${esc(t.name)}</div>` : ""}</div></div>`;
+}
+const empty = msg => `<div class="empty">${esc(msg)}</div>`;
+function remaining() {
+  const gps = S.races.filter(r => !S.results[r.round]).length;
+  const sps = S.races.filter(r => r.sprint && !S.sprints[r.round]).length;
+  return { gps, sps, pts: gps * 25 + sps * 8 };
+}
+
+/* ---------- live ---------- */
+function renderHero() {
+  const h = heroRace(); if (!h) return;
+  $("heroLabel").textContent = `Round ${h.round} of ${S.races.length} · ${h.circuit}`;
+  $("heroName").textContent = h.name;
+  const q = S.quali[h.round] || seeded("quali", h.round);
+  const lead = S.dStand[0];
+  $("facts").innerHTML = [
+    ["Location", esc(h.loc)],
+    ["Format", h.sprint ? "Sprint weekend" : "Standard"],
+    q && q[0] ? ["Pole", esc(drv(q[0].id).last)] : null,
+    lead ? ["Leader", `${esc(drv(lead.id).last)} · ${lead.pts}`] : null
+  ].filter(Boolean).map(([l, v]) => `<div><span class="label">${l}</span><b style="font-size:16px">${v}</b></div>`).join("");
+  renderSessions();
+}
+function sessionNote(h, name) {
+  const winner = rows => rows && rows[0] ? drv(rows[0].id).last : null;
+  if (name === "Qualifying") { const q = S.quali[h.round] || seeded("quali", h.round); return q && q[0] && "Pole: " + drv(q[0].id).last; }
+  if (name === "Sprint") { const w = winner(S.sprints[h.round] || seeded("sprint", h.round)); return w && "Winner: " + w; }
+  if (name === "Grand Prix") { const w = winner(S.results[h.round]); return w && "Winner: " + w; }
+  return null;
+}
 function renderSessions() {
+  const h = heroRace(); if (!h) return;
   const now = Date.now(); let nextMarked = false;
-  $("sessions").innerHTML = `<div class="label" style="margin-bottom:4px">Weekend schedule</div>` + SESSIONS.map(([n, iso, note]) => {
-    const future = iso && Date.parse(iso) > now; let cls = "";
+  $("sessions").innerHTML = `<div class="label" style="margin-bottom:4px">Weekend schedule</div>` + h.ses.map(([n, t]) => {
+    const future = t > now; let cls = "";
     if (future && !nextMarked) { cls = "next"; nextMarked = true; }
-    return `<div class="sess ${cls}"><b>${n}</b><span class="when">${iso ? esc(fmtDT(iso)) : "Fri 9 Oct"}</span><span class="note">${esc(future ? "Upcoming" : note)}</span></div>`;
+    const note = future ? "Upcoming" : (sessionNote(h, n) || (now - t < LIVE_WINDOW && n === "Grand Prix" ? "Underway" : "Done"));
+    return `<div class="sess ${cls}"><b>${esc(n)}</b><span class="when">${esc(fmtDT(t))}</span><span class="note">${esc(note)}</span></div>`;
   }).join("");
 }
 function tick() {
-  const now = Date.now(); const diff = RACE_START - now;
-  const st = $("raceState"), tx = $("raceStateTxt");
-  if (diff > 0) {
-    const s = Math.floor(diff / 1000);
-    $("cd-d").textContent = Math.floor(s / 86400);
-    $("cd-h").textContent = String(Math.floor(s % 86400 / 3600)).padStart(2, "0");
-    $("cd-m").textContent = String(Math.floor(s % 3600 / 60)).padStart(2, "0");
-    $("cd-s").textContent = String(s % 60).padStart(2, "0");
-    st.className = "state"; tx.textContent = "Lights out " + fmtDT(new Date(RACE_START).toISOString());
+  const h = heroRace(); if (!h) return;
+  const diff = h.start - Date.now(); const st = $("raceState"), tx = $("raceStateTxt");
+  const set = (d, hh, m, s) => { $("cd-d").textContent = d; $("cd-h").textContent = hh; $("cd-m").textContent = m; $("cd-s").textContent = s; };
+  if (S.results[h.round]) { set("0","00","00","00"); st.className = "state done"; tx.textContent = "Season complete"; }
+  else if (diff > 0) {
+    const s = Math.floor(diff / 1000), p = n => String(n).padStart(2, "0");
+    set(Math.floor(s / 86400), p(Math.floor(s % 86400 / 3600)), p(Math.floor(s % 3600 / 60)), p(s % 60));
+    st.className = "state"; tx.textContent = "Lights out " + fmtDT(h.start);
   } else {
-    ["cd-d","cd-h","cd-m","cd-s"].forEach(i => $(i).textContent = i === "cd-d" ? "0" : "00");
-    if (diff > -2.25 * 3600e3) { st.className = "state live"; tx.textContent = "Race underway"; }
-    else { st.className = "state done"; tx.textContent = "Chequered flag · classification pending"; }
+    set("0","00","00","00");
+    if (diff > -LIVE_WINDOW) { st.className = "state live"; tx.textContent = "Race underway"; }
+    else { st.className = "state done"; tx.textContent = "Chequered flag · official result usually lands within a few hours"; }
   }
 }
 function renderQuali() {
-  $("qualiTbl").innerHTML = `<thead><tr><th>Pos</th><th>Driver</th><th class="r">Time / gap</th></tr></thead><tbody>` +
-    QUALI.map(([c, t, note], i) => {
-      const cls = i === 0 ? "best" : (t === "No time" ? "out" : "");
-      return `<tr><td class="pos">${i + 1}</td><td>${drvCell(c)}${note ? `<div class="team warn" style="margin-left:14px">${esc(note)}</div>` : ""}</td><td class="r num ${cls}">${esc(t)}</td></tr>`;
-    }).join("") + `</tbody>`;
+  const h = heroRace(); const api = S.quali[h.round]; const q = api || seeded("quali", h.round);
+  const qs = h.ses.find(s => s[0] === "Qualifying");
+  $("qualiLabel").innerHTML = q ? `${qs ? esc(fmtD(qs[1])) : ""}${api ? "" : ` · <span class="prov">Provisional</span>`}` : "";
+  if (!q || !q.length) { $("qualiBox").innerHTML = empty(qs && qs[1] > Date.now() ? `Qualifying runs ${fmtDT(qs[1])}. The order appears here a few hours after the session.` : "Waiting for the official qualifying order. It usually appears a few hours after the session."); return; }
+  $("qualiBox").innerHTML = `<table><thead><tr><th>Pos</th><th>Driver</th><th class="r">Time / gap</th></tr></thead><tbody>` +
+    q.map((r, i) => `<tr><td class="pos">${i + 1}</td><td>${drvCell(r.id)}${r.note ? `<div class="team warn" style="margin-left:14px">${esc(r.note)}</div>` : ""}</td><td class="r num ${i === 0 ? "best" : r.t === "No time" ? "out" : ""}">${esc(r.t)}</td></tr>`).join("") + `</tbody></table>`;
 }
-function renderSprint() {
-  $("sprintTbl").innerHTML = `<thead><tr><th>Pos</th><th>Driver</th><th class="r">Pts</th></tr></thead><tbody>` +
-    SPRINT.map(([c, p], i) => `<tr><td class="pos">${i + 1}</td><td>${drvCell(c)}</td><td class="r num">${p}</td></tr>`).join("") +
-    `</tbody>`;
+function renderSide() {
+  const h = heroRace();
+  if (h.sprint) {
+    const api = S.sprints[h.round]; const sp = api || seeded("sprint", h.round);
+    const ss = h.ses.find(s => s[0] === "Sprint");
+    $("sideTitle").textContent = "Sprint result";
+    $("sprintLabel").innerHTML = sp ? `${ss ? esc(fmtD(ss[1])) + " · " : ""}points finishers${api ? "" : ` · <span class="prov">Provisional</span>`}` : "";
+    $("sprintBox").innerHTML = sp && sp.length ? `<table><thead><tr><th>Pos</th><th>Driver</th><th class="r">Pts</th></tr></thead><tbody>` +
+      sp.filter(r => r.pts > 0).map(r => `<tr><td class="pos">${r.pos}</td><td>${drvCell(r.id)}</td><td class="r num">${r.pts}</td></tr>`).join("") + `</tbody></table>`
+      : empty(ss && ss[1] > Date.now() ? `The Sprint runs ${fmtDT(ss[1])}.` : "Waiting for the official Sprint result.");
+    return;
+  }
+  // standard weekend: show the previous race podium instead
+  const rds = Object.keys(S.results).map(Number); const last = rds.length ? Math.max(...rds) : 0;
+  $("sideTitle").textContent = "Last race";
+  if (!last) { $("sprintLabel").textContent = ""; $("sprintBox").innerHTML = empty("No races run yet this season."); return; }
+  const r = S.races.find(x => x.round === last);
+  $("sprintLabel").textContent = `Rd ${last} · ${r ? r.name : ""}`;
+  $("sprintBox").innerHTML = `<table><thead><tr><th>Pos</th><th>Driver</th><th class="r">Time</th></tr></thead><tbody>` +
+    S.results[last].slice(0, 3).map(x => `<tr><td class="pos">${x.pos}</td><td>${drvCell(x.id)}</td><td class="r num">${esc(x.time)}</td></tr>`).join("") + `</tbody></table>`;
 }
 function renderFight() {
-  const top = DRV.slice(0, 5); const max = top[0][1];
-  const remaining = 7 * 25; // Singapore GP + 6 more GPs, no sprints left
-  const lead = DRV[0][1] - DRV[1][1];
-  $("fight").innerHTML = top.map(([c, p]) => {
-    const alive = p + remaining > max;
-    return `<div class="row"><span>${esc(shortName(c))}</span><div class="meter"><i style="width:${(p / max * 100).toFixed(1)}%;background:${TEAMS[D[c][2]].c}"></i></div><span class="num r">${p}</span></div>`;
-  }).join("") + `<p>Antonelli leads Russell by <strong class="num">${lead}</strong> points with <strong class="num">${remaining}</strong> still available across seven Grands Prix. Russell crashed out of the Sprint lead on lap one and starts tonight's race from a grid penalty.</p>`;
+  $("fightLabel").textContent = S.standRound ? `After Rd ${S.standRound}` : "";
+  if (S.dStand.length < 2) { $("fight").innerHTML = `<p>Standings appear after the first race.</p>`; return; }
+  const top = S.dStand.slice(0, 5); const max = top[0].pts || 1; const rem = remaining();
+  const L = S.dStand[0], R2 = S.dStand[1], lead = L.pts - R2.pts;
+  const alive = S.dStand.filter((d, i) => i > 0 && d.pts + rem.pts >= L.pts).map(d => drv(d.id).last);
+  let txt;
+  if (!rem.gps) txt = `<strong>${esc(drv(L.id).name)}</strong> is the champion.`;
+  else if (!alive.length) txt = `<strong>${esc(drv(L.id).name)}</strong> has the title sealed: nobody can close a <strong class="num">${lead}</strong>-point gap with <strong class="num">${rem.pts}</strong> left.`;
+  else txt = `${esc(drv(L.id).last)} leads ${esc(drv(R2.id).last)} by <strong class="num">${lead}</strong> points with <strong class="num">${rem.pts}</strong> still available across ${rem.gps} Grand${rem.gps === 1 ? "" : "s"} Prix${rem.sps ? ` and ${rem.sps} Sprint${rem.sps === 1 ? "" : "s"}` : ""}. Still mathematically in it: ${esc(alive.join(", "))}.`;
+  $("fight").innerHTML = top.map(d => `<div class="row"><span>${esc(drv(d.id).last)}</span><div class="meter"><i style="width:${(d.pts / max * 100).toFixed(1)}%;background:${team(drv(d.id).cid).c}"></i></div><span class="num r">${d.pts}</span></div>`).join("") + `<p>${txt}</p>`;
+}
+function posOptions(sel, def) {
+  const keep = sel.options.length ? sel.value : def;
+  sel.innerHTML = GP_PTS.map((p, i) => `<option value="${i}">P${i + 1} · ${p} pts</option>`).join("") + `<option value="10">P11 or lower · 0 pts</option><option value="11">DNF · 0 pts</option>`;
+  sel.value = keep;
+}
+function renderCalc() {
+  const h = heroRace(); const rem = remaining();
+  const ok = S.dStand.length >= 2 && !S.results[h.round] && rem.gps > 0;
+  $("calcWrap").hidden = !ok; if (!ok) return;
+  const L = S.dStand[0], R2 = S.dStand[1], nl = drv(L.id).last, nr = drv(R2.id).last;
+  const next = S.races.find(r => r.round > h.round);
+  $("calcIntro").textContent = `Pick where ${nl} and ${nr} finish at the ${h.name} and see how the championship looks ${next ? "heading to the " + next.name : "at the end of the season"}.`;
+  $("calcALbl").textContent = nl + " finishes"; $("calcBLbl").textContent = nr + " finishes";
+  posOptions($("calcA"), 0); posOptions($("calcB"), 1);
+  const a = +$("calcA").value, b = +$("calcB").value;
+  const A = L.pts + (a < 10 ? GP_PTS[a] : 0), B = R2.pts + (b < 10 ? GP_PTS[b] : 0), lead = A - B, left = rem.pts - 25;
+  let head, sub;
+  if (a === b && a < 10) { head = "Not possible"; sub = "Two drivers can't finish in the same position."; }
+  else if (lead > left) { head = `${nl} champion`; sub = `A ${lead}-point lead with only ${left} left would settle it${next ? " before the " + next.name : ""} (ignoring anyone further back).`; }
+  else if (lead > 0) { head = `${nl} +${lead}`; sub = `${A} to ${B}. With ${left} points left after this race, ${nr} would need to outscore ${nl} by more than ${lead} to take the title outright.`; }
+  else if (lead < 0) { head = `${nr} +${-lead}`; sub = `${nr} would take the championship lead, ${B} to ${A}, with ${left} points still to play for.`; }
+  else { head = "Level on points"; sub = `Both on ${A} with ${left} points still to play for.`; }
+  $("calcOut").innerHTML = `<b>${esc(head)}</b><span>${esc(sub)}</span>`;
 }
 
-// Standings
+/* pick your podium, stored per season+round */
+function picks() { try { return JSON.parse(localStorage.getItem("pw-picks") || "{}"); } catch (e) { return {}; } }
+function renderPick() {
+  const h = heroRace(); const key = S.season + "-" + h.round; const all = picks(); const mine = all[key];
+  const field = (S.quali[h.round] || seeded("quali", h.round) || []).map(x => x.id);
+  S.dStand.forEach(d => field.includes(d.id) || field.push(d.id));
+  const sels = ["pick1","pick2","pick3"].map($);
+  sels.forEach((s, i) => { const v = s.value; s.innerHTML = field.map(id => `<option value="${esc(id)}">${esc(drv(id).name)}</option>`).join(""); s.value = mine ? mine[i] : (v && field.includes(v) ? v : field[i]); });
+  $("pickShow").innerHTML = mine ? mine.map((id, i) => `<div><em>P${i + 1}</em><span class="tc" style="height:16px;background:${team(drv(id).cid).c}"></span>${esc(drv(id).name)}</div>`).join("") : "";
+  const locked = Date.now() >= h.start || !!S.results[h.round];
+  [...sels, $("pickSave")].forEach(el => el.disabled = locked);
+  if (locked) $("pickMsg").textContent = mine ? "Picks closed · yours is below" : "Picks closed at lights out";
+  // score the most recent finished pick
+  const done = Object.keys(all).filter(k => { const [s, r] = k.split("-"); return s === S.season && S.results[r]; }).sort((x, y) => y.split("-")[1] - x.split("-")[1])[0];
+  if (done) {
+    const rd = done.split("-")[1], pod = S.results[rd].slice(0, 3).map(x => x.id), p = all[done];
+    const exact = p.filter((id, i) => pod[i] === id).length, onPod = p.filter(id => pod.includes(id)).length;
+    const r = S.races.find(x => x.round === +rd);
+    $("pickPrev").textContent = `Your ${r ? r.name : "last"} pick: ${onPod}/3 on the podium, ${exact} in the exact spot`;
+  } else $("pickPrev").textContent = "";
+}
+$("pickSave").addEventListener("click", () => {
+  const p = ["pick1","pick2","pick3"].map(id => $(id).value);
+  if (new Set(p).size < 3) { $("pickMsg").textContent = "Choose three different drivers"; return; }
+  const all = picks(); all[S.season + "-" + heroRace().round] = p;
+  let saved = true; try { localStorage.setItem("pw-picks", JSON.stringify(all)); } catch (e) { saved = false; }
+  $("pickMsg").textContent = saved ? "Locked in" : "Couldn't save on this device";
+  renderPick();
+});
+["calcA","calcB"].forEach(id => $(id).addEventListener("change", renderCalc));
+
+/* ---------- standings ---------- */
 function renderStandings() {
-  const max = DRV[0][1];
-  $("drvTbl").innerHTML = `<thead><tr><th>Pos</th><th>Driver</th><th>No.</th><th class="r">Wins</th><th class="barcell"></th><th class="r">Pts</th><th class="r">Gap</th></tr></thead><tbody>` +
-    DRV.map(([c, p, w], i) => `<tr><td class="pos">${i + 1}</td><td>${drvCell(c)}</td><td class="num">${D[c][1]}</td><td class="r num">${w || "–"}</td>
-    <td class="barcell"><div class="bar-track"><div class="bar-fill" style="width:${(p / max * 100).toFixed(1)}%;background:${TEAMS[D[c][2]].c}"></div></div></td>
-    <td class="r num" style="font-weight:600">${p}</td><td class="r num team">${i ? "−" + (max - p) : "Leader"}</td></tr>`).join("") + `</tbody>`;
-  const cmax = CON[0][1];
-  $("conTbl").innerHTML = `<thead><tr><th>Pos</th><th>Team</th><th class="r">Wins</th><th class="barcell"></th><th class="r">Pts</th><th class="r">Gap</th></tr></thead><tbody>` +
-    CON.map(([t, p, w], i) => `<tr><td class="pos">${i + 1}</td><td><div class="drv"><span class="tc" style="background:${TEAMS[t].c}"></span><strong>${esc(TEAMS[t].name)}</strong></div></td><td class="r num">${w || "–"}</td>
-    <td class="barcell"><div class="bar-track"><div class="bar-fill" style="width:${(p / cmax * 100).toFixed(1)}%;background:${TEAMS[t].c}"></div></div></td>
-    <td class="r num" style="font-weight:600">${p}</td><td class="r num team">${i ? "−" + (cmax - p) : "Leader"}</td></tr>`).join("") + `</tbody>`;
+  const lbl = S.standRound ? `After Rd ${S.standRound}` : "";
+  $("drvLabel").textContent = lbl; $("conLabel").textContent = lbl;
+  if (!S.dStand.length) { $("drvBox").innerHTML = empty("Standings appear after the first race."); $("conBox").innerHTML = ""; return; }
+  const max = S.dStand[0].pts || 1;
+  $("drvBox").innerHTML = `<table><thead><tr><th>Pos</th><th>Driver</th><th>No.</th><th class="r">Wins</th><th class="barcell"></th><th class="r">Pts</th><th class="r">Gap</th></tr></thead><tbody>` +
+    S.dStand.map((d, i) => `<tr><td class="pos">${i + 1}</td><td>${drvCell(d.id)}</td><td class="num">${esc(drv(d.id).num)}</td><td class="r num">${d.wins || "–"}</td>
+    <td class="barcell"><div class="bar-track"><div class="bar-fill" style="width:${(d.pts / max * 100).toFixed(1)}%;background:${team(drv(d.id).cid).c}"></div></div></td>
+    <td class="r num" style="font-weight:600">${d.pts}</td><td class="r num team">${i ? "−" + (S.dStand[0].pts - d.pts) : "Leader"}</td></tr>`).join("") + `</tbody></table>`;
+  const cmax = S.cStand[0] ? S.cStand[0].pts || 1 : 1;
+  $("conBox").innerHTML = `<table><thead><tr><th>Pos</th><th>Team</th><th class="r">Wins</th><th class="barcell"></th><th class="r">Pts</th><th class="r">Gap</th></tr></thead><tbody>` +
+    S.cStand.map((c, i) => `<tr><td class="pos">${i + 1}</td><td><div class="drv"><span class="tc" style="background:${team(c.cid).c}"></span><strong>${esc(team(c.cid).name)}</strong></div></td><td class="r num">${c.wins || "–"}</td>
+    <td class="barcell"><div class="bar-track"><div class="bar-fill" style="width:${(c.pts / cmax * 100).toFixed(1)}%;background:${team(c.cid).c}"></div></div></td>
+    <td class="r num" style="font-weight:600">${c.pts}</td><td class="r num team">${i ? "−" + (S.cStand[0].pts - c.pts) : "Leader"}</td></tr>`).join("") + `</tbody></table>`;
 }
-
-// Calendar
-function renderCal() {
-  $("tzLabel").textContent = "Race start in your zone · " + tz.replace(/_/g, " ");
-  const now = Date.now();
-  const nextIdx = CAL.findIndex(r => Date.parse(r[4]) + 2.25 * 3600e3 > now && !RES[r[0]]);
-  $("cal").innerHTML = CAL.map((r, i) => {
-    const [rd, name, circ, loc, iso, sprint] = r; const res = RES[rd];
-    const state = res ? "done" : (i === nextIdx ? "next" : "");
-    const win = res ? `<div class="win"><span class="tc" style="height:14px;background:${TEAMS[D[res[0]][2]].c}"></span>Won by ${esc(D[res[0]][0])}</div>`
-                    : `<div class="win num">${esc(fmtDT(iso))}</div>`;
-    return `<article class="panel round ${state}"><div class="top"><span class="label">Rd ${rd} · ${esc(fmtD(iso))}</span>
-      <span style="display:flex;gap:4px">${sprint ? `<span class="pill sprint">Sprint</span>` : ""}${state === "next" ? `<span class="pill next">Next</span>` : ""}</span></div>
-      <h3>${esc(name)}</h3><div class="where">${esc(circ)} · ${esc(loc)}</div>${win}</article>`;
-  }).join("");
+// cumulative race + sprint points per round
+function progression() {
+  const rds = Object.keys(S.results).map(Number).sort((a, b) => a - b);
+  const tot = {}, series = {};
+  rds.forEach(rd => {
+    [...S.results[rd], ...(S.sprints[rd] || [])].forEach(x => tot[x.id] = (tot[x.id] || 0) + x.pts);
+    Object.keys(S.drivers).forEach(id => (series[id] ||= []).push(tot[id] || 0));
+  });
+  return { rds, series };
 }
-
-// Results
-function renderResults() {
-  $("resList").innerHTML = Object.keys(RES).map(Number).sort((a, b) => b - a).map(rd => {
-    const r = RES[rd]; const c = CAL[rd - 1];
-    return `<article class="panel res"><div class="rn">RD ${rd}<br>${esc(fmtD(c[4]))}</div>
-      <div style="min-width:0"><h3>${esc(c[1])}</h3><div class="team">${esc(c[2])} · Pole: ${esc(shortName(r[3]))} · ${esc(r[4])}</div></div>
-      <div class="podium">${[0,1,2].map(p => `<div><em>P${p + 1}</em><span class="tc" style="height:16px;background:${TEAMS[D[r[p]][2]].c}"></span><span>${esc(D[r[p]][0])}</span></div>`).join("")}</div></article>`;
-  }).join("");
-  const fastest = LAST.reduce((a, b) => b[4] < a[4] ? b : a)[4];
-  $("lastTbl").innerHTML = `<thead><tr><th>Pos</th><th>Driver</th><th class="r">Grid</th><th class="r">Time / status</th><th class="r">Best lap</th><th class="r">Pts</th></tr></thead><tbody>` +
-    LAST.map(([c, g, t, p, fl], i) => {
-      const dnf = t.startsWith("DNF"); const gain = g - (i + 1);
-      return `<tr><td class="pos ${dnf ? "out" : ""}">${dnf ? "DNF" : i + 1}</td><td>${drvCell(c)}</td>
-      <td class="r num">${g}${!dnf && gain ? ` <span class="${gain > 0 ? "pb" : "warn"}">${gain > 0 ? "▲" + gain : "▼" + (-gain)}</span>` : ""}</td>
-      <td class="r num ${dnf ? "out" : ""}">${esc(t)}</td><td class="r num ${fl === fastest ? "best" : ""}">${fl}</td><td class="r num">${p || ""}</td></tr>`;
-    }).join("") + `</tbody>`;
-}
-
-// Teams
-function renderTeams() {
-  const conPos = Object.fromEntries(CON.map((c, i) => [c[0], [i + 1, c[1]]]));
-  const pts = Object.fromEntries(DRV.map(d => [d[0], d[1]]));
-  $("teams").innerHTML = CON.map(([t]) => {
-    const drivers = Object.keys(D).filter(k => D[k][2] === t && k !== "TSU");
-    return `<article class="panel teamcard" style="--tc:${TEAMS[t].c}"><div class="th"><h3>${esc(TEAMS[t].name)}</h3><span class="label">P${conPos[t][0]} · ${conPos[t][1]} pts</span></div>
-      <div class="drivers">${drivers.map(k => `<div class="d"><b>${D[k][1]}</b><button type="button" class="dlink" data-d="${k}">${esc(D[k][0])}</button><span class="team num">${pts[k]} pts</span></div>`).join("")}</div></article>`;
-  }).join("");
-}
-function renderGuide() {
-  $("ptsGp").innerHTML = [25,18,15,12,10,8,6,4,2,1].map((p, i) => `<div><b>${p}</b><span>P${i + 1}</span></div>`).join("");
-}
-
-// Points after each round (16 GPs, then the Singapore Sprint)
-const PROG_X = ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","SGS"];
-const PROG = {
-  ANT:[18,47,72,100,131,156,156,171,179,204,219,242,267,292,302,320,325],
-  RUS:[25,51,63,80,88,88,106,131,154,154,160,183,201,211,236,236,236],
-  HAM:[12,33,41,51,72,90,115,125,147,159,169,183,191,191,199,214,221],
-  LEC:[15,34,49,59,75,75,75,79,108,126,138,155,155,167,179,191,197],
-  VER:[8,8,12,26,43,43,55,73,76,91,109,112,127,145,163,188,196],
-  NOR:[10,15,25,51,58,58,73,79,97,103,128,159,171,186,186,188,189],
-  PIA:[0,3,21,43,48,60,70,82,84,94,94,106,116,120,120,128,128],
-  HAD:[0,4,4,4,14,29,37,45,55,63,71,71,71,71,86,96,96]
-};
-const focus = new Set(Object.keys(PROG));
+let focus = null;
 function renderProg() {
-  const W = 760, H = 330, L = 34, R = 78, T = 12, B = 26;
-  const maxY = 350, n = PROG_X.length;
+  const { rds, series } = progression(); const top = S.dStand.slice(0, 8).map(d => d.id).filter(id => series[id]);
+  if (rds.length < 2 || !top.length) { $("progChart").innerHTML = empty("The chart fills in once a few rounds have run."); $("legend").innerHTML = ""; return; }
+  if (!focus) focus = new Set(top);
+  const W = 760, H = 330, L = 34, R = 78, T = 12, B = 26, n = rds.length;
+  const maxY = Math.max(50, Math.ceil(Math.max(...top.map(id => series[id][n - 1])) / 50) * 50);
+  const step = maxY > 400 ? 100 : 50;
   const x = i => L + i * (W - L - R) / (n - 1);
   const y = v => T + (1 - v / maxY) * (H - T - B);
   let g = `<g class="grid">`;
-  for (let v = 0; v <= maxY; v += 50) g += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 6}" y="${y(v) + 3}" text-anchor="end">${v}</text>`;
+  for (let v = 0; v <= maxY; v += step) g += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 6}" y="${y(v) + 3}" text-anchor="end">${v}</text>`;
   g += `</g>`;
-  PROG_X.forEach((r, i) => { if (i % 2 === 0 || i === n - 1) g += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle">${r === "SGS" ? "SG·S" : "R" + r}</text>`; });
-  // end labels, nudged apart so they don't overlap
-  const ends = Object.keys(PROG).map(k => ({ k, v: PROG[k][n - 1], yy: y(PROG[k][n - 1]) })).sort((a, b) => a.yy - b.yy);
+  rds.forEach((r, i) => { if (i % 2 === 0 || i === n - 1) g += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle">R${r}</text>`; });
+  const ends = top.map(k => ({ k, v: series[k][n - 1], yy: y(series[k][n - 1]) })).sort((a, b) => a.yy - b.yy);
   for (let i = 1; i < ends.length; i++) if (ends[i].yy - ends[i - 1].yy < 13) ends[i].yy = ends[i - 1].yy + 13;
   let lines = "", labels = "";
-  Object.keys(PROG).forEach(k => {
-    const c = TEAMS[D[k][2]].c, on = focus.has(k);
-    const d = PROG[k].map((v, i) => (i ? "L" : "M") + x(i).toFixed(1) + " " + y(v).toFixed(1)).join(" ");
-    lines += `<path class="ln ${on ? "" : "dim"}" d="${d}" stroke="${c}"/>`;
-    if (on) lines += `<circle cx="${x(n - 1)}" cy="${y(PROG[k][n - 1])}" r="3.5" fill="${c}"/>`;
+  top.forEach(k => {
+    const c = team(drv(k).cid).c, on = focus.has(k);
+    lines += `<path class="ln ${on ? "" : "dim"}" d="${series[k].map((v, i) => (i ? "L" : "M") + x(i).toFixed(1) + " " + y(v).toFixed(1)).join(" ")}" stroke="${c}"/>`;
+    if (on) lines += `<circle cx="${x(n - 1)}" cy="${y(series[k][n - 1])}" r="3.5" fill="${c}"/>`;
   });
-  ends.forEach(e => { if (focus.has(e.k)) labels += `<text class="lbl" x="${x(n - 1) + 8}" y="${e.yy + 4}" style="fill:${TEAMS[D[e.k][2]].c}">${D[e.k][0].split(" ").pop().slice(0,3).toUpperCase()} ${e.v}</text>`; });
-  $("progChart").innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Championship points after each round for the top eight drivers">${g}${lines}${labels}</svg>`;
-  $("legend").innerHTML = Object.keys(PROG).map(k => `<button type="button" data-k="${k}" aria-pressed="${focus.has(k)}"><i style="background:${TEAMS[D[k][2]].c}"></i>${esc(shortName(k))}</button>`).join("") +
-    `<button type="button" data-k="*" aria-pressed="true">All</button>`;
+  ends.forEach(e => { if (focus.has(e.k)) labels += `<text class="lbl" x="${x(n - 1) + 8}" y="${e.yy + 4}" style="fill:${team(drv(e.k).cid).c}">${esc(drv(e.k).code)} ${e.v}</text>`; });
+  $("progChart").innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Championship points after each round for the top drivers">${g}${lines}${labels}</svg>`;
+  $("legend").innerHTML = top.map(k => `<button type="button" data-k="${esc(k)}" aria-pressed="${focus.has(k)}"><i style="background:${team(drv(k).cid).c}"></i>${esc(drv(k).last)}</button>`).join("") + `<button type="button" data-k="*" aria-pressed="true">All</button>`;
+  $("legend").dataset.all = top.join(",");
 }
 $("legend").addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b) return;
-  const k = b.dataset.k;
-  if (k === "*") Object.keys(PROG).forEach(x => focus.add(x));
-  else if (focus.size === Object.keys(PROG).length) { focus.clear(); focus.add(k); }
-  else if (focus.has(k)) { focus.delete(k); if (!focus.size) Object.keys(PROG).forEach(x => focus.add(x)); }
+  const all = $("legend").dataset.all.split(","), k = b.dataset.k;
+  if (k === "*") all.forEach(x => focus.add(x));
+  else if (focus.size === all.length) { focus.clear(); focus.add(k); }
+  else if (focus.has(k)) { focus.delete(k); if (!focus.size) all.forEach(x => focus.add(x)); }
   else focus.add(k);
   renderProg();
 });
 
-// Title calculator
-const GP_PTS = [25,18,15,12,10,8,6,4,2,1];
-function posOptions(sel, def) {
-  sel.innerHTML = GP_PTS.map((p, i) => `<option value="${i}">P${i + 1} · ${p} pts</option>`).join("") + `<option value="10">P11 or lower · 0 pts</option><option value="11">DNF · 0 pts</option>`;
-  sel.value = def;
+/* ---------- calendar / results / teams ---------- */
+function renderCal() {
+  $("calTitle").textContent = S.season + " Calendar";
+  $("tzLabel").textContent = "Race start in your zone · " + tz.replace(/_/g, " ");
+  const h = heroRace();
+  $("cal").innerHTML = S.races.map(r => {
+    const res = S.results[r.round]; const state = res ? "done" : (r.round === h.round ? "next" : "");
+    const win = res && res[0] ? `<div class="win"><span class="tc" style="height:14px;background:${team(drv(res[0].id).cid).c}"></span>Won by ${esc(drv(res[0].id).name)}</div>` : `<div class="win num">${esc(fmtDT(r.start))}</div>`;
+    return `<article class="panel round ${state}"><div class="top"><span class="label">Rd ${r.round} · ${esc(fmtD(r.start))}</span>
+      <span style="display:flex;gap:4px">${r.sprint ? `<span class="pill sprint">Sprint</span>` : ""}${state === "next" ? `<span class="pill next">Next</span>` : ""}</span></div>
+      <h3>${esc(r.name.replace(/Grand Prix/, "GP"))}</h3><div class="where">${esc(r.circuit)} · ${esc(r.loc)}</div>${win}</article>`;
+  }).join("");
 }
-function renderCalc() {
-  const a = +$("calcAnt").value, r = +$("calcRus").value;
-  const pa = a < 10 ? GP_PTS[a] : 0, pr = r < 10 ? GP_PTS[r] : 0;
-  const A = DRV[0][1] + pa, Rp = DRV[1][1] + pr, lead = A - Rp, left = 6 * 25;
-  let head, sub;
-  if (a === r && a < 10) { head = "Not possible"; sub = "Two drivers can't finish in the same position."; }
-  else if (lead > left) { head = "Antonelli champion"; sub = `A ${lead}-point lead with ${left} left would settle it, though not tonight in reality: the maximum swing tonight is 25.`; }
-  else if (lead > 0) {
-    head = `Antonelli +${lead}`;
-    sub = `${A} to ${Rp} heading to Austin. With ${left} points left over six races, Russell would need to outscore him by ${Math.ceil(lead / 6 * 10) / 10} a race on average. Antonelli could clinch at the next race if he leads by more than 125 after it.`;
-  } else { head = `Russell +${-lead}`; sub = `${Rp} to ${A}. A swing that size isn't possible tonight, so this can't happen yet.`; }
-  $("calcOut").innerHTML = `<b>${esc(head)}</b><span>${esc(sub)}</span>`;
+function renderResults() {
+  const rds = Object.keys(S.results).map(Number).sort((a, b) => b - a);
+  if (!rds.length) { $("resList").innerHTML = empty("No races run yet this season."); $("lastBox").innerHTML = ""; $("lastLabel").textContent = ""; return; }
+  $("resList").innerHTML = rds.map(rd => {
+    const res = S.results[rd], r = S.races.find(x => x.round === rd) || { name: "Round " + rd, circuit: "", start: Date.now() };
+    const p1 = res.find(x => x.grid === 1);
+    return `<article class="panel res"><div class="rn">RD ${rd}<br>${esc(fmtD(r.start))}</div>
+      <div style="min-width:0"><h3>${esc(r.name.replace(/Grand Prix/, "GP"))}</h3><div class="team">${esc(r.circuit)}${p1 ? " · From P1: " + esc(drv(p1.id).last) : ""}${res[0] ? " · " + esc(res[0].time) : ""}</div></div>
+      <div class="podium">${res.slice(0, 3).map((x, p) => `<div><em>P${p + 1}</em><span class="tc" style="height:16px;background:${team(drv(x.id).cid).c}"></span><span>${esc(drv(x.id).name)}</span></div>`).join("")}</div></article>`;
+  }).join("");
+  const last = S.results[rds[0]], lr = S.races.find(x => x.round === rds[0]);
+  $("lastLabel").textContent = `Rd ${rds[0]}${lr ? " · " + lr.name + " · " + fmtD(lr.start) : ""}`;
+  const fls = last.map(x => x.fl).filter(Boolean); const fastest = fls.length ? fls.reduce((a, b) => b < a ? b : a) : null;
+  $("lastBox").innerHTML = `<table><thead><tr><th>Pos</th><th>Driver</th><th class="r">Grid</th><th class="r">Time / status</th><th class="r">Best lap</th><th class="r">Pts</th></tr></thead><tbody>` +
+    last.map(x => {
+      const dnf = x.pos === null; const gain = x.grid && !dnf ? x.grid - x.pos : 0;
+      return `<tr><td class="pos ${dnf ? "out" : ""}">${dnf ? "DNF" : x.pos}</td><td>${drvCell(x.id)}</td>
+      <td class="r num">${x.grid || "Pit"}${gain ? ` <span class="${gain > 0 ? "pb" : "warn"}">${gain > 0 ? "▲" + gain : "▼" + (-gain)}</span>` : ""}</td>
+      <td class="r num ${dnf ? "out" : ""}">${esc(x.time)}</td><td class="r num ${x.fl && x.fl === fastest ? "best" : ""}">${esc(x.fl)}</td><td class="r num">${x.pts || ""}</td></tr>`;
+    }).join("") + `</tbody></table>`;
+}
+// a team's current line-up = who drove for it in its most recent race
+function lineups() {
+  const rds = Object.keys(S.results).map(Number).sort((a, b) => b - a); const out = {};
+  rds.forEach(rd => S.results[rd].forEach(x => { const cid = drv(x.id).cid; (out[cid] ||= { rd, ids: [] }); if (out[cid].rd === rd && !out[cid].ids.includes(x.id)) out[cid].ids.push(x.id); }));
+  return out;
+}
+function renderTeams() {
+  const lu = lineups(); const pts = Object.fromEntries(S.dStand.map(d => [d.id, d.pts]));
+  $("gridTitle").textContent = `The ${S.season} grid`;
+  $("gridLabel").textContent = `${S.cStand.length} teams`;
+  $("teams").innerHTML = S.cStand.length ? S.cStand.map((c, i) => {
+    const ids = (lu[c.cid] || { ids: [] }).ids; const t = team(c.cid);
+    return `<article class="panel teamcard" style="--tc:${t.c}"><div class="th"><h3>${esc(t.name)}</h3><span class="label">P${i + 1} · ${c.pts} pts</span></div>
+      <div class="drivers">${ids.map(k => `<div class="d"><b>${esc(drv(k).num)}</b><button type="button" class="dlink" data-d="${esc(k)}">${esc(drv(k).name)}</button><span class="team num">${pts[k] || 0} pts</span></div>`).join("")}</div></article>`;
+  }).join("") : empty("Teams appear after the first race.");
 }
 
-// Pick your podium
-const GRID_CODES = QUALI.map(q => q[0]);
-function pickOptions(sel, def) { sel.innerHTML = GRID_CODES.map(c => `<option value="${c}">${esc(D[c][0])}</option>`).join(""); sel.value = def; }
-function loadPick() { try { return JSON.parse(localStorage.getItem("pw-pick-sg26") || "null"); } catch (e) { return null; } }
-function showPick() {
-  const p = loadPick();
-  $("pickShow").innerHTML = p ? p.map((c, i) => `<div><em>P${i + 1}</em><span class="tc" style="height:16px;background:${TEAMS[D[c][2]].c}"></span>${esc(D[c][0])}</div>`).join("") : "";
-  const locked = Date.now() >= RACE_START;
-  ["pick1","pick2","pick3","pickSave"].forEach(id => $(id).disabled = locked);
-  if (locked) $("pickMsg").textContent = p ? "Picks closed · yours is below" : "Picks closed at lights out";
+/* ---------- driver profile ---------- */
+function driverStats(id) {
+  const idx = S.dStand.findIndex(d => d.id === id); const st = S.dStand[idx] || { pts: 0, wins: 0 };
+  let podiums = 0, best = null;
+  Object.values(S.results).forEach(res => { const r = res.find(x => x.id === id); if (r && r.pos) { if (r.pos <= 3) podiums++; best = best === null ? r.pos : Math.min(best, r.pos); } });
+  return { pos: idx + 1, pts: st.pts, wins: st.wins, podiums, best };
 }
-$("pickSave").addEventListener("click", () => {
-  const p = [$("pick1").value, $("pick2").value, $("pick3").value];
-  if (new Set(p).size < 3) { $("pickMsg").textContent = "Choose three different drivers"; return; }
-  let saved = true; try { localStorage.setItem("pw-pick-sg26", JSON.stringify(p)); } catch (e) { saved = false; }
-  $("pickMsg").textContent = saved ? "Locked in" : "Couldn't save on this device, but here's your pick";
-  if (saved) showPick(); else $("pickShow").innerHTML = p.map((c, i) => `<div><em>P${i + 1}</em>${esc(D[c][0])}</div>`).join("");
-});
-
-// Driver profile
-function driverStats(c) {
-  const idx = DRV.findIndex(d => d[0] === c);
-  const pts = idx >= 0 ? DRV[idx][1] : 0, wins = idx >= 0 ? DRV[idx][2] : 0;
-  let podiums = 0, poles = 0, best = null;
-  Object.values(RES).forEach(r => { const p = r.slice(0, 3).indexOf(c); if (p >= 0) { podiums++; best = best === null ? p + 1 : Math.min(best, p + 1); } if (r[3] === c) poles++; });
-  if (QUALI[0][0] === c) poles++;
-  return { pos: idx + 1, pts, wins, podiums, poles, best };
-}
-function openProfile(c) {
-  const [name, num, t] = D[c]; const team = TEAMS[t]; const s = driverStats(c);
-  const mate = Object.keys(D).find(k => k !== c && D[k][2] === t && k !== "TSU" && c !== "TSU") || null;
+function openProfile(id) {
+  const d = drv(id), t = team(d.cid), s = driverStats(id);
+  const lu = lineups()[d.cid]; const mate = lu ? lu.ids.find(k => k !== id) : null;
   let h2h = "";
   if (mate) {
-    const ms = driverStats(mate); const tot = (s.pts + ms.pts) || 1;
+    const ms = driverStats(mate), tot = (s.pts + ms.pts) || 1;
     h2h = `<div><div class="label" style="margin-bottom:8px">Teammate battle · points</div><div class="h2h">
-      <span><strong>${esc(shortName(c))}</strong> <span class="num">${s.pts}</span></span><span class="label">vs</span><span style="text-align:right"><span class="num">${ms.pts}</span> <strong>${esc(shortName(mate))}</strong></span>
-      <div class="track"><i style="width:${s.pts / tot * 100}%;background:${team.c}"></i><i style="flex:1;background:var(--line)"></i></div></div></div>`;
+      <span><strong>${esc(d.last)}</strong> <span class="num">${s.pts}</span></span><span class="label">vs</span><span style="text-align:right"><span class="num">${ms.pts}</span> <strong>${esc(drv(mate).last)}</strong></span>
+      <div class="track"><i style="width:${s.pts / tot * 100}%;background:${t.c}"></i><i style="flex:1;background:var(--line)"></i></div></div></div>`;
   }
-  let spark = "";
-  if (PROG[c]) {
-    const vals = PROG[c].map((v, i) => i ? v - PROG[c][i - 1] : v); const W = 500, H = 90, bw = W / vals.length;
+  const { rds, series } = progression(); let spark = "";
+  if (series[id] && rds.length) {
+    const vals = series[id].map((v, i) => i ? v - series[id][i - 1] : v), W = 500, H = 90, bw = W / vals.length, top = Math.max(33, ...vals);
     spark = `<div><div class="label" style="margin-bottom:8px">Points scored each round</div><svg class="spark" viewBox="0 0 ${W} ${H}" role="img" aria-label="Points per round">` +
-      vals.map((v, i) => { const h = v / 25 * (H - 16); return `<rect x="${i * bw + 2}" y="${H - 12 - h}" width="${bw - 4}" height="${Math.max(h, 1.5)}" rx="2" fill="${v ? team.c : "var(--line)"}"/>`; }).join("") +
-      PROG_X.map((r, i) => i % 4 === 0 ? `<text x="${i * bw + bw / 2}" y="${H}" text-anchor="middle" style="fill:var(--muted);font:500 9px var(--mono)">${r === "SGS" ? "SG·S" : "R" + r}</text>` : "").join("") + `</svg></div>`;
+      vals.map((v, i) => { const hh = v / top * (H - 16); return `<rect x="${i * bw + 2}" y="${H - 12 - hh}" width="${Math.max(bw - 4, 1)}" height="${Math.max(hh, 1.5)}" rx="2" fill="${v ? t.c : "var(--line)"}"/>`; }).join("") +
+      rds.map((r, i) => i % 4 === 0 ? `<text x="${i * bw + bw / 2}" y="${H}" text-anchor="middle" style="fill:var(--muted);font:500 9px var(--mono)">R${r}</text>` : "").join("") + `</svg></div>`;
   }
-  const dlg = $("prof");
-  dlg.style.setProperty("--tc", team.c);
-  dlg.innerHTML = `<div class="ph"><span class="big">${num}</span><div><div class="label">${esc(team.name)}</div><h3 id="profName">${esc(name)}</h3></div><button class="close" type="button" aria-label="Close">×</button></div>
+  const dlg = $("prof"); dlg.style.setProperty("--tc", t.c);
+  dlg.innerHTML = `<div class="ph"><span class="big">${esc(d.num)}</span><div><div class="label">${esc(t.name)}</div><h3 id="profName">${esc(d.name)}</h3></div><button class="close" type="button" aria-label="Close">×</button></div>
     <div class="stats">
       <div><span class="label">Pos</span><b>${s.pos ? "P" + s.pos : "–"}</b></div>
       <div><span class="label">Points</span><b>${s.pts}</b></div>
       <div><span class="label">Wins</span><b>${s.wins}</b></div>
       <div><span class="label">Podiums</span><b>${s.podiums}</b></div>
-      <div><span class="label">Poles</span><b>${s.poles}</b></div>
+      <div><span class="label">Best</span><b>${s.best ? "P" + s.best : "–"}</b></div>
     </div>
     <div class="pb2">${spark}${h2h}${!spark && !h2h ? `<p class="team">No further data for this driver.</p>` : ""}</div>`;
   dlg.querySelector(".close").addEventListener("click", () => dlg.close());
   if (typeof dlg.showModal === "function") dlg.showModal(); else dlg.setAttribute("open", "");
 }
 $("prof").addEventListener("click", e => { if (e.target === e.currentTarget) e.currentTarget.close(); });
-document.addEventListener("click", e => { const b = e.target.closest(".dlink"); if (b) openProfile(b.dataset.d); });
+document.addEventListener("click", e => { const b = e.target.closest(".dlink"); if (b && S) openProfile(b.dataset.d); });
 
-// Tabs
+/* ---------- tabs ---------- */
 const VIEWS = ["live","standings","calendar","results","grid","guide"];
 function show(v) {
   if (!VIEWS.includes(v)) v = "live";
@@ -773,14 +854,33 @@ function show(v) {
   try { localStorage.setItem("pw-tab", v); } catch (e) {}
 }
 document.querySelectorAll("nav.tabs button").forEach(b => b.addEventListener("click", () => { show(b.dataset.v); window.scrollTo({ top: 0 }); }));
+$("ptsGp").innerHTML = GP_PTS.map((p, i) => `<div><b>${p}</b><span>P${i + 1}</span></div>`).join("");
+
+/* ---------- boot ---------- */
+function renderAll() {
+  renderHero(); renderQuali(); renderSide(); renderFight(); renderCalc(); renderPick();
+  renderStandings(); renderProg(); renderCal(); renderResults(); renderTeams(); tick();
+  $("dataStamp").innerHTML = `<strong>Live data · last checked ${esc(fmtT(S.fetched))}</strong>. Standings after Rd ${S.standRound || 0}. Official results usually appear a few hours after each session.`;
+}
+function notice(html, err) { const n = $("notice"); n.hidden = !html; n.className = "notice" + (err ? " err" : ""); n.innerHTML = html || ""; }
+async function refresh() {
+  try {
+    const N = await load(); S = N; focus = null; renderAll(); notice("");
+    try { localStorage.setItem("pw-data-v2", JSON.stringify(N)); } catch (e) {}
+  } catch (e) {
+    if (S) notice(`Couldn't reach the data feed, showing data from ${esc(fmtDT(S.fetched))}. <button class="btn ghost" type="button" id="retry">Try again</button>`, true);
+    else notice(`Couldn't load live data. Check your connection. <button class="btn" type="button" id="retry">Try again</button>`, true);
+    const r = $("retry"); if (r) r.addEventListener("click", () => { notice("Loading…"); refresh(); });
+  }
+}
 let start = location.hash.slice(1);
 if (!start) { try { start = localStorage.getItem("pw-tab") || ""; } catch (e) {} }
-
-renderSessions(); renderQuali(); renderSprint(); renderFight(); renderStandings(); renderCal(); renderResults(); renderTeams(); renderGuide(); renderProg();
-posOptions($("calcAnt"), 1); posOptions($("calcRus"), 0);
-["calcAnt","calcRus"].forEach(id => $(id).addEventListener("change", renderCalc)); renderCalc();
-{ const p = loadPick() || ["VER","LEC","HAM"]; pickOptions($("pick1"), p[0]); pickOptions($("pick2"), p[1]); pickOptions($("pick3"), p[2]); showPick(); }
-show(start); tick(); setInterval(tick, 1000); setInterval(renderSessions, 60000);
+show(start);
+try { const c = JSON.parse(localStorage.getItem("pw-data-v2") || "null"); if (c && c.races) { S = c; renderAll(); } } catch (e) {}
+refresh();
+setInterval(tick, 1000);
+setInterval(() => { if (S) renderSessions(); }, 60000);
+setInterval(refresh, 10 * 60000);
 </script>
 
 </body></html>
